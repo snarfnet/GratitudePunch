@@ -121,7 +121,7 @@ final class PunchDetector {
             let fullExtent = upperArm + foreArm
             let extensionRatio = fullExtent > 0 ? armLen / fullExtent : 0
 
-            let extScore = min(100, extensionRatio * 120)
+            let extScore = min(100.0, Double(extensionRatio) * 120.0)
             score += extScore * 0.4
             armExtSamples.append(extScore)
 
@@ -135,15 +135,14 @@ final class PunchDetector {
         // 2. Hikite (引き手): pull hand should be near hip/waist level
         if let pullW = pullWrist, let pullS = pullShoulder {
             // Pull hand should be lower than shoulder and close to body
-            let pullDown = pullS.y - pullW.y  // positive = wrist above shoulder in screen coords
-            // In Vision coords (0=bottom), wrist.y < shoulder.y means wrist is lower
-            let isLow = pullW.y > pullS.y  // wrist below shoulder
+            let isLow = pullW.y > pullS.y
             let hikiteScore: Double
             if isLow {
-                let dist = pullW.y - pullS.y
-                hikiteScore = min(100, dist * 500)
+                let dist = Double(pullW.y - pullS.y)
+                hikiteScore = min(100.0, dist * 500.0)
             } else {
-                hikiteScore = max(0, 30 - abs(pullDown) * 200)
+                let pullDown = Double(abs(pullS.y - pullW.y))
+                hikiteScore = max(0.0, 30.0 - pullDown * 200.0)
                 feedback.append("引き手を腰に引く")
             }
             score += hikiteScore * 0.3
@@ -157,7 +156,7 @@ final class PunchDetector {
             let hipAngle = atan2(rh.y - lh.y, rh.x - lh.x)
             let shoulderAngle = atan2(rs.y - ls.y, rs.x - ls.x)
             let rotation = abs(hipAngle - shoulderAngle)
-            let rotScore = min(100, rotation * 400)
+            let rotScore = min(100.0, Double(rotation) * 400.0)
             score += rotScore * 0.3
             rotationSamples.append(rotScore)
 
