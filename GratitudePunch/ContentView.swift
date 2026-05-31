@@ -8,6 +8,8 @@ struct ContentView: View {
     @State private var speech = SpeechListener()
     @State private var showResults = false
 
+    private let isEn = Locale.preferredLanguages.first?.hasPrefix("en") == true
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
@@ -39,21 +41,21 @@ struct ContentView: View {
             Text("👊")
                 .font(.system(size: 100))
 
-            Text("感謝の正拳突き")
+            Text(isEn ? "Gratitude Punch" : "感謝の正拳突き")
                 .font(.system(size: 32, weight: .black, design: .rounded))
                 .foregroundColor(.white)
 
-            Text("一日一万回")
+            Text(isEn ? "10,000 Punches a Day" : "一日一万回")
                 .font(.system(size: 20, weight: .bold, design: .monospaced))
                 .foregroundColor(.orange)
 
             Spacer()
 
             VStack(spacing: 8) {
-                Text("正拳突きの型をチェック")
+                Text(isEn ? "Check your punch form" : "正拳突きの型をチェック")
                     .font(.system(size: 14, design: .monospaced))
                     .foregroundColor(.white.opacity(0.6))
-                Text("感謝の言葉を声に出そう")
+                Text(isEn ? "Say words of gratitude" : "感謝の言葉を声に出そう")
                     .font(.system(size: 14, design: .monospaced))
                     .foregroundColor(.white.opacity(0.6))
             }
@@ -63,7 +65,7 @@ struct ContentView: View {
                 speech.reset()
                 speech.start()
             } label: {
-                Text("修行開始")
+                Text(isEn ? "START TRAINING" : "修行開始")
                     .font(.system(size: 24, weight: .black, design: .monospaced))
                     .foregroundColor(.black)
                     .frame(maxWidth: .infinity)
@@ -99,7 +101,7 @@ struct ContentView: View {
                         Text("\(detector.stats.totalPunches)")
                             .font(.system(size: 60, weight: .black, design: .monospaced))
                             .foregroundColor(.orange)
-                        Text("正拳突き")
+                        Text(isEn ? "PUNCHES" : "正拳突き")
                             .font(.system(size: 12, weight: .bold, design: .monospaced))
                             .foregroundColor(.orange.opacity(0.7))
                     }
@@ -143,7 +145,7 @@ struct ContentView: View {
 
                 // Form feedback
                 if !detector.formFeedback.isEmpty {
-                    Text(detector.formFeedback)
+                    Text(isEn ? detector.formFeedbackEn : detector.formFeedback)
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
                         .foregroundColor(.white)
                         .padding(.horizontal, 16)
@@ -154,7 +156,7 @@ struct ContentView: View {
 
                 // Gratitude heard flash
                 if !speech.lastHeardWord.isEmpty {
-                    Text("🙏 \(speech.lastHeardWord)!")
+                    Text("🙏 \(speech.lastHeardWord)!!")
                         .font(.system(size: 20, weight: .black, design: .rounded))
                         .foregroundColor(.green)
                         .padding(.horizontal, 16)
@@ -171,9 +173,9 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     VStack(alignment: .trailing, spacing: 6) {
-                        formRow("腕の伸び", detector.stats.armExtension)
-                        formRow("引き手", detector.stats.hikite)
-                        formRow("腰回転", detector.stats.hipRotation)
+                        formRow(isEn ? "Extend" : "腕の伸び", detector.stats.armExtension)
+                        formRow(isEn ? "Pull" : "引き手", detector.stats.hikite)
+                        formRow(isEn ? "Hip" : "腰回転", detector.stats.hipRotation)
                     }
                     .padding(10)
                     .background(.black.opacity(0.6))
@@ -207,12 +209,11 @@ struct ContentView: View {
                 Button {
                     detector.stopSession()
                     speech.stop()
-                    // Sync gratitude count
                     detector.stats.gratitudeCount = speech.gratitudeCount
                     detector.stats.gratitudeWords = speech.gratitudeWords
                     showResults = true
                 } label: {
-                    Text("終了")
+                    Text(isEn ? "STOP" : "終了")
                         .font(.system(size: 20, weight: .black, design: .monospaced))
                         .foregroundColor(.white)
                         .padding(.horizontal, 50)
@@ -240,30 +241,29 @@ struct ContentView: View {
     private var resultsView: some View {
         ScrollView {
             VStack(spacing: 24) {
-                Text("修行結果")
+                Text(isEn ? "SESSION RESULTS" : "修行結果")
                     .font(.system(size: 30, weight: .black, design: .rounded))
                     .foregroundColor(.orange)
                     .padding(.top, 60)
 
-                // Main stats
                 VStack(spacing: 16) {
-                    resultCard("👊 正拳突き", "\(detector.stats.totalPunches) 回")
-                    resultCard("✅ 正しい型", "\(detector.stats.goodFormPunches) 回 (\(String(format: "%.0f%%", detector.stats.formRate)))")
-                    resultCard("🙏 感謝の言葉", "\(detector.stats.gratitudeCount) 回")
-                    resultCard("⏱ 時間", durationText)
-                    resultCard("⚡ ペース", String(format: "%.0f 回/分", detector.stats.punchesPerMinute))
+                    resultCard(isEn ? "👊 Punches" : "👊 正拳突き", "\(detector.stats.totalPunches)")
+                    resultCard(isEn ? "✅ Good Form" : "✅ 正しい型", "\(detector.stats.goodFormPunches) (\(String(format: "%.0f%%", detector.stats.formRate)))")
+                    resultCard(isEn ? "🙏 Gratitude" : "🙏 感謝の言葉", "\(detector.stats.gratitudeCount)")
+                    resultCard(isEn ? "⏱ Time" : "⏱ 時間", durationText)
+                    resultCard(isEn ? "⚡ Pace" : "⚡ ペース", String(format: "%.0f /min", detector.stats.punchesPerMinute))
                 }
                 .padding(.horizontal, 20)
 
                 // Form breakdown
                 VStack(spacing: 12) {
-                    Text("フォーム評価")
+                    Text(isEn ? "FORM RATING" : "フォーム評価")
                         .font(.system(size: 20, weight: .black, design: .monospaced))
                         .foregroundColor(.orange)
 
-                    ratingBar("腕の伸び", detector.stats.armExtension)
-                    ratingBar("引き手", detector.stats.hikite)
-                    ratingBar("腰の回転", detector.stats.hipRotation)
+                    ratingBar(isEn ? "Extension" : "腕の伸び", detector.stats.armExtension)
+                    ratingBar(isEn ? "Pull Hand" : "引き手", detector.stats.hikite)
+                    ratingBar(isEn ? "Hip Rotation" : "腰の回転", detector.stats.hipRotation)
                 }
                 .padding(20)
                 .background(Color.white.opacity(0.05))
@@ -273,7 +273,7 @@ struct ContentView: View {
                 // Gratitude words heard
                 if !detector.stats.gratitudeWords.isEmpty {
                     VStack(spacing: 8) {
-                        Text("聞こえた感謝の言葉")
+                        Text(isEn ? "Gratitude Words Heard" : "聞こえた感謝の言葉")
                             .font(.system(size: 16, weight: .bold, design: .monospaced))
                             .foregroundColor(.green)
 
@@ -296,7 +296,7 @@ struct ContentView: View {
                 Button {
                     showResults = false
                 } label: {
-                    Text("もう一度修行する")
+                    Text(isEn ? "TRAIN AGAIN" : "もう一度修行する")
                         .font(.system(size: 20, weight: .black, design: .monospaced))
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
@@ -358,17 +358,17 @@ struct ContentView: View {
         let gratitude = detector.stats.gratitudeCount
         let msg: String
         if total >= 10000 {
-            msg = "一万回達成！ネテロ会長に一歩近づいた！"
+            msg = isEn ? "10,000 reached! One step closer to mastery!" : "一万回達成！ネテロ会長に一歩近づいた！"
         } else if total >= 5000 {
-            msg = "半分到達！この調子で続けろ！"
+            msg = isEn ? "Halfway there! Keep going!" : "半分到達！この調子で続けろ！"
         } else if total >= 1000 {
-            msg = "千回突破！まだまだこれから！"
+            msg = isEn ? "1,000 punches! Just getting started!" : "千回突破！まだまだこれから！"
         } else if gratitude > total {
-            msg = "感謝の気持ちが溢れている！"
+            msg = isEn ? "Your gratitude overflows!" : "感謝の気持ちが溢れている！"
         } else if gratitude == 0 && total > 0 {
-            msg = "突きは出てるけど、感謝の気持ちは？"
+            msg = isEn ? "Good punches, but where's the gratitude?" : "突きは出てるけど、感謝の気持ちは？"
         } else {
-            msg = "千里の道も一歩から。明日も修行だ。"
+            msg = isEn ? "A journey of 10,000 begins with one punch." : "千里の道も一歩から。明日も修行だ。"
         }
         return Text(msg)
             .font(.system(size: 16, weight: .bold, design: .rounded))

@@ -8,6 +8,7 @@ final class PunchDetector {
     var lastQuality: PunchQuality?
     var isSessionActive = false
     var formFeedback = ""
+    var formFeedbackEn = ""
 
     private var prevLeftWrist: CGPoint?
     private var prevRightWrist: CGPoint?
@@ -173,7 +174,12 @@ final class PunchDetector {
         stats.hikite = avg(hikiteSamples.suffix(window))
         stats.hipRotation = avg(rotationSamples.suffix(window))
 
+        var feedbackEn: [String] = []
+        if feedback.contains("腕をもっと伸ばす") { feedbackEn.append("Extend arm more") }
+        if feedback.contains("引き手を腰に引く") { feedbackEn.append("Pull hand to hip") }
+        if feedback.contains("腰を回す") { feedbackEn.append("Rotate hips") }
         formFeedback = feedback.isEmpty ? "良い型です" : feedback.joined(separator: " / ")
+        formFeedbackEn = feedbackEn.isEmpty ? "Good form!" : feedbackEn.joined(separator: " / ")
 
         switch score {
         case 80...: return .perfect

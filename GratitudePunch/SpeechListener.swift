@@ -26,7 +26,8 @@ final class SpeechListener {
     func start() {
         guard !isListening else { return }
 
-        recognizer = SFSpeechRecognizer(locale: Locale(identifier: "ja-JP"))
+        let isJa = Locale.preferredLanguages.first?.hasPrefix("ja") == true
+        recognizer = SFSpeechRecognizer(locale: Locale(identifier: isJa ? "ja-JP" : "en-US"))
         guard let recognizer = recognizer, recognizer.isAvailable else { return }
 
         audioEngine = AVAudioEngine()
