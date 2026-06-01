@@ -14,6 +14,8 @@ final class SpeechListener {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private var lastTranscript = ""
+    /// Tracks cumulative keyword hits from the full transcript to handle revisions
+    private var prevKeywordCounts: [String: Int] = [:]
 
     func requestPermission(completion: @escaping (Bool) -> Void) {
         SFSpeechRecognizer.requestAuthorization { status in
@@ -52,17 +54,20 @@ final class SpeechListener {
             if let result = result {
                 let transcript = result.bestTranscription.formattedString.lowercased()
 
-                // Check for new gratitude words since last check
-                let newPart = String(transcript.dropFirst(self.lastTranscript.count))
-                if !newPart.isEmpty {
-                    for keyword in gratitudeKeywords {
-                        if newPart.contains(keyword) {
-                            DispatchQueue.main.async {
-                                self.gratitudeCount += 1
-                                self.lastHeardWord = keyword
-                                if !self.gratitudeWords.contains(keyword) {
-                                    self.gratitudeWords.append(keyword)
-                                }
+                // Count all keyword occurrences in the full transcript,
+                // then emit only the delta vs. previous counts.
+                // This handles speech recognizer revisions correctly.
+                for keyword in gratitudeKeywords {
+                    let count = self.occurrences(of: keyword, in: transcript)
+                    let prev = self.prevKeywordCounts[keyword] ?? 0
+                    if count > prev {
+                        let delta = count - prev
+                        self.prevKeywordCounts[keyword] = count
+                        DispatchQueue.main.async {
+                            self.gratitudeCount += delta
+                            self.lastHeardWord = keyword
+                            if !self.gratitudeWords.contains(keyword) {
+                                self.gratitudeWords.append(keyword)
                             }
                         }
                     }
@@ -106,5 +111,16 @@ final class SpeechListener {
         gratitudeWords = []
         lastHeardWord = ""
         lastTranscript = ""
+        prevKeywordCounts = [:]
+    }
+
+    private func occurrences(of keyword: String, in text: String) -> Int {
+        var count = 0
+        var searchRange = text.startIndex..<text.endIndex
+        while let range = text.range(of: keyword, range: searchRange) {
+            count += 1
+            searchRange = range.upperBound..<text.endIndex
+        }
+        return count
     }
 }

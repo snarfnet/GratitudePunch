@@ -109,6 +109,18 @@ struct ContentView: View {
                     Spacer()
 
                     VStack(alignment: .trailing, spacing: 6) {
+                        // Recording indicator
+                        if speech.isListening {
+                            HStack(spacing: 5) {
+                                Circle()
+                                    .fill(.red)
+                                    .frame(width: 10, height: 10)
+                                Text(isEn ? "REC" : "録音中")
+                                    .font(.system(size: 12, weight: .black, design: .monospaced))
+                                    .foregroundColor(.red)
+                            }
+                        }
+
                         // Time
                         Text(durationText)
                             .font(.system(size: 18, weight: .bold, design: .monospaced))
